@@ -122,6 +122,7 @@ public class MessageActivity extends AppCompatActivity {
 
                 //Encryption Method
 
+
                 msg = AESEncyptionMethod(text_send.getText().toString());
 
                 if(!msg.equals("") && !msg.equals(" ")){
@@ -165,7 +166,7 @@ public class MessageActivity extends AppCompatActivity {
 
     }
 
-    private String AESEncyptionMethod(String message){
+    public String AESEncyptionMethod(String message){
         byte[] msgByte = message.getBytes();
         byte[] encryptedByte = new byte[msgByte.length];
 
@@ -190,6 +191,8 @@ public class MessageActivity extends AppCompatActivity {
 
         return encryptedMsg;
     }
+
+
 
 
     private void seenMessage(final String userid){
@@ -260,6 +263,13 @@ public class MessageActivity extends AppCompatActivity {
                     Chat chat = dataSnapshot.getValue(Chat.class);
                     if(chat.getReceiver().equals(myid) && chat.getSender().equals(userid) || chat.getReceiver().equals(userid) &&
                     chat.getSender().equals(myid)){
+
+                        try {
+                            chat.setMessage(AESDecyptionMethod(chat.getMessage()));
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+
                         mchat.add(chat);
                     }
                     messageAdapter = new MessageAdapter(MessageActivity.this,mchat,imageurl);
@@ -273,6 +283,26 @@ public class MessageActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public String AESDecyptionMethod(String message) throws UnsupportedEncodingException {
+        byte[] EncyptedByte = message.getBytes("ISO-8859-1");
+        String decrypedString = message;
+
+        byte[] decryption;
+        try {
+            decipher.init(cipher.DECRYPT_MODE, secretKeySpec);
+            decryption = decipher.doFinal(EncyptedByte);
+            decrypedString = new String(decryption);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+        return decrypedString;
     }
 
 }
